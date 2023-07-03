@@ -5,6 +5,7 @@ import { SelectedPage } from "@/shared/types";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import ActionButton from "@/shared/ActionButton";
 import { motion, useCycle } from "framer-motion";
+import { useEffect, useRef } from "react";
 
 type Props = {
   selectedPage: SelectedPage;
@@ -16,8 +17,18 @@ const Navbar = ({ selectedPage, setSelectedPage, isTopOfPage }: Props) => {
   const flexBetween = "flex items-center justify-between";
   const isAboveMediumScreen = useMediaQuery("(min-width: 1060px)");
   const navbarBg = isTopOfPage ? "" : "bg-primary-100 drop-shadow";
-  // const [isMenuToggled, setIsMenuToggled] = useState<boolean>(false);
-  const [isOpen, toggleOpen] = useCycle(false, true);
+  const [isMenuOpen, toggleMenu] = useCycle(false, true);
+  const mobileMenu = useRef<HTMLDivElement>(null);
+
+  const closeMenu = (e: Event) => {
+    if (mobileMenu.current && isMenuOpen && !mobileMenu.current.contains(e.target as Node)) {
+      toggleMenu(0);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", closeMenu);
+  });
 
   return (
     <nav>
@@ -45,7 +56,7 @@ const Navbar = ({ selectedPage, setSelectedPage, isTopOfPage }: Props) => {
                 </div>
               </div>
             ) : (
-              <button className=" rounded-full bg-secondary-500 p-2" onClick={() => toggleOpen()}>
+              <button className=" rounded-full bg-secondary-500 p-2" onClick={() => toggleMenu()}>
                 <Bars3Icon className="h-6 w-6 text-white" />
               </button>
             )}
@@ -56,8 +67,9 @@ const Navbar = ({ selectedPage, setSelectedPage, isTopOfPage }: Props) => {
       {/*Mobile menu modal*/}
       {!isAboveMediumScreen && (
         <motion.div
+          ref={mobileMenu}
           className="fixed bottom-0 right-0 z-40  h-full w-[300px] bg-primary-100 drop-shadow-xl"
-          animate={isOpen ? "open" : "closed"}
+          animate={isMenuOpen ? "open" : "closed"}
           initial="closed"
           transition={{ duration: 0.5 }}
           variants={{
@@ -67,7 +79,7 @@ const Navbar = ({ selectedPage, setSelectedPage, isTopOfPage }: Props) => {
         >
           {/* Close icon*/}
           <div className="flex justify-end p-12">
-            <button onClick={() => toggleOpen()}>
+            <button onClick={() => toggleMenu()}>
               <XMarkIcon className="h-6 w-6 text-gray-400" />
             </button>
           </div>
